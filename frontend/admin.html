@@ -116,30 +116,26 @@
               <tbody>
                 <template x-for="customer in customers" :key="customer.id">
                   <tr style="border-bottom:1px solid var(--input-border)">
-                    <template x-if="editingId === customer.id">
-                      <td colspan="4" class="p-3">
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
-                          <input x-model="editCustomer.company_name" type="text" placeholder="Компания" class="admin-input">
-                          <input x-model="editCustomer.address" type="text" placeholder="Адрес" class="admin-input">
-                          <input x-model="editCustomer.customer_phone" type="text" placeholder="Телефон КЛ" class="admin-input">
-                          <div class="flex gap-2">
-                            <button @click="saveEdit(customer.id)" class="btn-primary flex-1">Сохранить</button>
-                            <button @click="cancelEdit()" class="btn-secondary">Отмена</button>
-                          </div>
-                        </div>
-                      </td>
-                    </template>
-                    <template x-if="editingId !== customer.id">
-                      <td class="p-3" x-text="customer.company_name"></td>
-                      <td class="p-3" x-text="customer.address || '—'"></td>
-                      <td class="p-3" x-text="customer.customer_phone || '—'"></td>
-                      <td class="p-3">
+                    <td x-show="editingId !== customer.id" class="p-3" x-text="customer.company_name"></td>
+                    <td x-show="editingId !== customer.id" class="p-3" x-text="customer.address || '—'"></td>
+                    <td x-show="editingId !== customer.id" class="p-3" x-text="customer.customer_phone || '—'"></td>
+                    <td x-show="editingId !== customer.id" class="p-3">
+                      <div class="flex gap-2">
+                        <button @click="startEdit(customer)" class="btn-secondary">Изменить</button>
+                        <button @click="deleteCustomer(customer.id)" class="btn-secondary btn-danger">Удалить</button>
+                      </div>
+                    </td>
+                    <td x-show="editingId === customer.id" colspan="4" class="p-3">
+                      <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                        <input x-model="editCustomer.company_name" type="text" placeholder="Компания" class="admin-input">
+                        <input x-model="editCustomer.address" type="text" placeholder="Адрес" class="admin-input">
+                        <input x-model="editCustomer.customer_phone" type="text" placeholder="Телефон КЛ" class="admin-input">
                         <div class="flex gap-2">
-                          <button @click="startEdit(customer)" class="btn-secondary">Изменить</button>
-                          <button @click="deleteCustomer(customer.id)" class="btn-secondary btn-danger">Удалить</button>
+                          <button @click="saveEdit(customer.id)" class="btn-primary flex-1">Сохранить</button>
+                          <button @click="cancelEdit()" class="btn-secondary">Отмена</button>
                         </div>
-                      </td>
-                    </template>
+                      </div>
+                    </td>
                   </tr>
                 </template>
               </tbody>
