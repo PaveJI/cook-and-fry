@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Cook and Fry — Заказ обеда с доставкой</title>
+  <meta name="description" content="Cook and Fry — сервис заказа вкусных обедов с доставкой. Выбирайте дату, блюда, напитки и хлеб.">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('cf-theme');
+        if (t) document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    :root, [data-theme="light"] {
+      --bg-base: #f0f4ff;
+      --blob-1: rgba(59,130,246,0.28);
+      --blob-2: rgba(139,92,246,0.24);
+      --blob-3: rgba(16,185,129,0.20);
+      --blob-4: rgba(236,72,153,0.16);
+      --text-primary: #0a0f1e;
+      --text-secondary: #1e293b;
+      --text-muted: #475569;
+      --glass-bg: rgba(255,255,255,0.72);
+      --glass-border: rgba(255,255,255,0.55);
+      --card-bg: rgba(255,255,255,0.70);
+      --card-border: rgba(0,0,0,0.06);
+      --input-bg: rgba(0,0,0,0.03);
+      --input-border: rgba(0,0,0,0.08);
+      --primary: #2563EB;
+      --primary-2: #7C3AED;
+      --accent: #E11D48;
+    }
+
+    [data-theme="dark"] {
+      --bg-base: #020205;
+      --blob-1: rgba(59,130,246,0.32);
+      --blob-2: rgba(139,92,246,0.32);
+      --blob-3: rgba(16,185,129,0.24);
+      --blob-4: rgba(244,63,94,0.22);
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --glass-bg: rgba(15,23,42,0.60);
+      --glass-border: rgba(255,255,255,0.55);
+      --card-bg: rgba(15,23,42,0.60);
+      --card-border: rgba(255,255,255,0.06);
+      --input-bg: rgba(255,255,255,0.05);
+      --input-border: rgba(255,255,255,0.10);
+      --primary: #3B82F6;
+      --primary-2: #8B5CF6;
+      --accent: #F43F5E;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    * { -webkit-tap-highlight-color: transparent; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      transition: background-color 0.5s ease, color 0.5s ease;
+    }
+
+    .icon { width: 1em; height: 1em; display: inline-block; vertical-align: middle; flex-shrink: 0; }
+    .icon svg { width: 100%; height: 100%; display: block; }
+
+    .hidden { display: none !important; }
+
+    .global-blobs {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+    }
+    .global-blobs .blob {
+      position: absolute; border-radius: 60% 40% 30% 70% / 100% 85% 92% 74%;
+      filter: blur(90px); opacity: 0.20; pointer-events: none;
+      animation: morphBlob 22s ease-in-out infinite alternate;
+    }
+    [data-theme="dark"] .global-blobs .blob { opacity: 0.28; }
+
+    @keyframes morphBlob {
+      0% { border-radius: 60% 40% 30% 70%/100% 85% 92% 74%; transform: translate(0,0) scale(1); }
+      50% { border-radius: 30% 60% 70% 40%/50% 60% 30% 60%; transform: translate(35px,-25px) scale(1.1); }
+      100% { border-radius: 70% 30% 50% 60%/30% 40% 70% 60%; transform: translate(-20px,30px) scale(0.95); }
+    }
+
+    .section-blobs {
+      position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+    }
+    .section-blobs .blob {
+      position: absolute; border-radius: 60% 40% 30% 70%/100% 85% 92% 74%;
+      filter: blur(70px); pointer-events: none;
+      animation: morphBlob 18s ease-in-out infinite alternate;
+    }
+
+    .wave-divider {
+      position: absolute; left: 0; right: 0; z-index: 1; pointer-events: none;
+      line-height: 0;
+    }
+    .wave-divider svg { display: block; width: 100%; height: auto; }
+    .wave-top { top: -1px; }
+
+    .glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px) saturate(1.4);
+      -webkit-backdrop-filter: blur(20px) saturate(1.4);
+      border: 1px solid var(--glass-border);
+      transition: background 0.5s ease, border-color 0.5s ease;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 50%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem;
+      padding: 0.9rem 1.6rem; border-radius: 1rem; font-weight: 600; font-size: 0.95rem;
+      text-decoration: none; border: none; cursor: pointer; transition: all 0.25s ease;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: #fff; position: relative; overflow: hidden;
+    }
+    .btn-primary::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transform: translateX(-100%); transition: transform 0.6s;
+    }
+    .btn-primary:hover::after { transform: translateX(100%); }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(37,99,235,0.30); }
+    .btn-primary:disabled { opacity: 0.75; cursor: not-allowed; transform: none; }
+    .btn-secondary {
+      background: var(--input-bg); color: var(--text-primary);
+      border: 1.5px solid var(--input-border);
+    }
+    .btn-secondary:hover { border-color: var(--primary); background: rgba(37,99,235,0.06); transform: translateY(-2px); }
+
+    .reveal {
+      opacity: 1; transform: none;
+      transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    .service-card {
+      transition: all 0.35s cubic-bezier(0.16,1,0.3,1);
+    }
+    .service-card:hover {
+      transform: translateY(-8px);
+      border-color: rgba(37,99,235,0.35);
+      box-shadow: 0 20px 50px rgba(37,99,235,0.12);
+    }
+
+    .nav-link {
+      position: relative; color: var(--text-secondary); text-decoration: none; font-weight: 500; font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    .nav-link::after {
+      content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px;
+      background: linear-gradient(90deg, var(--primary), var(--primary-2)); transition: width 0.25s ease;
+    }
+    .nav-link:hover { color: var(--text-primary); }
+    .nav-link:hover::after { width: 100%; }
+
+    .theme-toggle {
+      width: 40px; height: 40px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center;
+      background: var(--glass-bg); border: 1px solid var(--glass-border); color: var(--text-primary); cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .theme-toggle:hover { transform: scale(1.05); border-color: rgba(37,99,235,0.3); }
+
+    .form-label {
+      display: block; margin-bottom: 0.35rem; font-size: 0.875rem; font-weight: 600; color: var(--text-secondary);
+    }
+    .form-input {
+      width: 100%; padding: 0.75rem 1rem; border-radius: 0.75rem; border: 1.5px solid var(--input-border);
+      background: var(--input-bg); color: var(--text-primary); font-size: 1rem; transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+    .form-input::placeholder { color: var(--text-muted); opacity: 0.7; }
+    textarea.form-input { resize: vertical; min-height: 84px; font-family: inherit; }
+    .required { color: var(--accent); margin-left: 0.15rem; }
+
+    .result { display: none; margin-top: 1rem; padding: 1rem; border-radius: 0.75rem; font-size: 0.95rem; }
+    .result.success { display: block; background: rgba(16,185,129,0.10); color: #059669; border: 1px solid rgba(16,185,129,0.25); }
+    [data-theme="dark"] .result.success { background: rgba(16,185,129,0.15); color: #34D399; border-color: rgba(16,185,129,0.3); }
+    .result.error { display: block; background: rgba(244,63,94,0.10); color: #E11D48; border: 1px solid rgba(244,63,94,0.25); }
+    [data-theme="dark"] .result.error { background: rgba(244,63,94,0.15); color: #FB7185; border-color: rgba(244,63,94,0.3); }
+    .result-title { font-weight: 700; margin-bottom: 0.25rem; }
+
+    .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+    .section { position: relative; z-index: 10; padding: 5rem 0; }
+
+    .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; border-bottom: 1px solid var(--card-border); }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; }
+    .nav-links { display: none; align-items: center; gap: 2rem; }
+    .mobile-menu { display: none; border-top: 1px solid var(--card-border); padding: 1rem 0; }
+    .mobile-menu.open { display: block; }
+    .mobile-menu a { display: block; padding: 0.75rem 0.5rem; border-radius: 0.75rem; color: var(--text-secondary); text-decoration: none; font-weight: 500; }
+    .mobile-menu a:hover { background: var(--input-bg); color: var(--text-primary); }
+
+    @media (min-width: 768px) {
+      .nav-links { display: flex; }
+      .menu-toggle { display: none; }
+      .mobile-menu { display: none !important; }
+    }
+
+    .hero { min-height: 100dvh; display: flex; align-items: center; padding-top: 5rem; padding-bottom: 3rem; }
+    .hero-grid { display: grid; grid-template-columns: 1fr; gap: 3rem; align-items: center; }
+    @media (min-width: 768px) { .hero-grid { grid-template-columns: 1fr 1fr; } }
+
+    .badge { display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.5rem 1rem; border-radius: 999px; font-size: 0.85rem; font-weight: 600; }
+
+    .title { font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 700; line-height: 1.1; margin: 0; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+    .grid-4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    @media (min-width: 640px) { .grid-4 { grid-template-columns: repeat(4, 1fr); } }
+    .grid-features { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
+    @media (min-width: 640px) { .grid-features { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1024px) { .grid-features { grid-template-columns: repeat(4, 1fr); } }
+
+    .icon-box { width: 3rem; height: 3rem; border-radius: 1rem; display: inline-flex; align-items: center; justify-content: center; font-size: 1.25rem; }
+    .icon-box-blue { background: rgba(37,99,235,0.10); color: var(--primary); border: 1px solid rgba(37,99,235,0.18); }
+    .icon-box-violet { background: rgba(139,92,246,0.10); color: var(--primary-2); border: 1px solid rgba(139,92,246,0.18); }
+    .icon-box-coral { background: rgba(225,29,72,0.10); color: var(--accent); border: 1px solid rgba(225,29,72,0.18); }
+    .icon-box-mint { background: rgba(16,185,129,0.10); color: #059669; border: 1px solid rgba(16,185,129,0.18); }
+
+    .hero-illustration { position: relative; display: none; justify-content: center; align-items: center; }
+    @media (min-width: 768px) { .hero-illustration { display: flex; } }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fadeUp { animation: fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) forwards; opacity: 0; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.6s; }
+
+    .logo-link { display: flex; align-items: center; min-width: 0; text-decoration: none; }
+
+    .hero-feature {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 1rem; border-radius: 1rem; text-align: center; gap: 0.25rem; min-height: 84px;
+    }
+    .hero-feature .value { font-family: "Space Grotesk", system-ui, sans-serif; font-weight: 700; line-height: 1.1; font-size: clamp(1.25rem, 4vw, 1.75rem); }
+    .hero-feature .label { font-size: 0.75rem; font-weight: 500; color: var(--text-muted); }
+
+    .pop-badge { display: inline-flex; align-items: center; gap: 0.4rem; border-radius: 0.85rem; padding: 0.65rem 1rem; }
+
+    .service-card { padding: 1.5rem; border-radius: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+    .service-card h3 { margin: 0; }
+    .service-card p { margin: 0; }
+    .service-card-static { pointer-events: none; height: 100%; }
+    .service-card-static:hover { transform: none; box-shadow: none; }
+
+    .order-card { position: relative; overflow: hidden; border-radius: 1.5rem; padding: 1.5rem; }
+    @media (min-width: 640px) { .order-card { padding: 2.5rem; } }
+    @media (min-width: 768px) { .order-card { padding: 3rem; } }
+
+    .contact-list { display: flex; flex-direction: column; gap: 1rem; }
+    .contact-row { display: flex; align-items: flex-start; gap: 0.75rem; }
+    .contact-card { border-radius: 1.5rem; padding: 1.5rem; }
+    @media (min-width: 640px) { .contact-card { padding: 2rem; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Inline SVG sprite -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+    <defs>
+      <symbol id="i-utensils" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v11"/><path d="M13 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M17 2v11"/><path d="M3 16h18l-2 6H5l-2-6Z"/>
+      </symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
+      </symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+      </symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/>
+      </symbol>
+      <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+      </symbol>
+      <symbol id="i-clipboard-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="M8 12h8"/><path d="M12 8v8"/>
+      </symbol>
+      <symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+      </symbol>
+      <symbol id="i-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+      </symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+      </symbol>
+      <symbol id="i-smile" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/>
+      </symbol>
+      <symbol id="i-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/>
+      </symbol>
+      <symbol id="i-clipboard-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><line x1="9" x2="15" y1="9" y2="9"/><line x1="9" x2="15" y1="13" y2="13"/><line x1="9" x2="11" y1="17" y2="17"/>
+      </symbol>
+      <symbol id="i-chef-hat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z"/><path d="M6 17h12"/>
+      </symbol>
+      <symbol id="i-truck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 17h4V5H2v12h3"/><path d="M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5v8h1"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
+      </symbol>
+      <symbol id="i-soup" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/><path d="M7 21h10"/><path d="M19.5 12 22 6"/><path d="M16 11 18.5 6"/><path d="M4 12l2.5-6"/><path d="M8 11 5.5 6"/>
+      </symbol>
+      <symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+      </symbol>
+      <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 6 9 17l-5-5"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <div class="global-blobs" aria-hidden="true">
+    <div class="blob" style="width:600px;height:600px;background:var(--blob-1);top:-10%;left:-5%;animation-delay:0s;"></div>
+    <div class="blob" style="width:500px;height:500px;background:var(--blob-2);top:5%;right:-8%;animation-delay:-5s;"></div>
+    <div class="blob" style="width:450px;height:450px;background:var(--blob-3);bottom:10%;left:-6%;animation-delay:-10s;"></div>
+    <div class="blob" style="width:550px;height:550px;background:var(--blob-4);bottom:0%;right:-4%;animation-delay:-15s;"></div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="nav glass">
+    <div class="container nav-inner">
+      <a href="#" class="logo-link">
+        <span class="title text-xl" style="color:var(--text-primary)">Cook and Fry</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="#why" class="nav-link">Почему мы</a>
+        <a href="#how" class="nav-link">Как заказать</a>
+        <a href="#order" class="nav-link">Заказать обед</a>
+        <a href="#contacts" class="nav-link">Контакты</a>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Переключить тему">
+          <svg id="icon-sun" class="icon hidden" aria-hidden="true"><use href="#i-sun"/></svg>
+          <svg id="icon-moon" class="icon" aria-hidden="true"><use href="#i-moon"/></svg>
+        </button>
+        <a href="#order" class="btn btn-primary">Оформить заказ</a>
+      </div>
+
+      <div class="flex items-center gap-2 md:hidden">
+        <button id="theme-toggle-mobile" class="theme-toggle" aria-label="Переключить тему">
+          <svg id="icon-sun-mobile" class="icon hidden" aria-hidden="true"><use href="#i-sun"/></svg>
+          <svg id="icon-moon-mobile" class="icon" aria-hidden="true"><use href="#i-moon"/></svg>
+        </button>
+        <button id="menu-toggle" class="menu-toggle theme-toggle" aria-label="Открыть меню">
+          <svg id="icon-menu" class="icon" aria-hidden="true"><use href="#i-menu"/></svg>
+          <svg id="icon-close" class="icon hidden" aria-hidden="true"><use href="#i-x"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div id="mobile-menu" class="mobile-menu glass-strong container">
+      <a href="#why" class="mobile-link">Почему мы</a>
+      <a href="#how" class="mobile-link">Как заказать</a>
+      <a href="#order" class="mobile-link">Заказать обед</a>
+      <a href="#contacts" class="mobile-link">Контакты</a>
+      <a href="#order" class="btn btn-primary" style="margin-top:0.5rem;width:100%">Оформить заказ</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="section-blobs" aria-hidden="true">
+      <div class="blob" style="width:550px;height:550px;background:var(--blob-1);top:-15%;right:-10%;animation-delay:0s;"></div>
+      <div class="blob" style="width:480px;height:480px;background:var(--blob-2);bottom:-20%;left:-8%;animation-delay:-7s;"></div>
+    </div>
+
+    <div class="container relative z-10">
+      <div class="hero-grid">
+        <div class="text-center md:text-left">
+          <div class="badge glass border animate-fadeUp delay-1" style="border-color:rgba(16,185,129,0.25);margin-bottom:1.5rem">
+            <span class="w-2.5 h-2.5 rounded-full" style="background:#10B981;box-shadow:0 0 8px rgba(16,185,129,0.5)"></span>
+            <span style="color:var(--text-secondary)">Доставка обедов — ежедневно</span>
+          </div>
+
+          <h1 class="title text-4xl sm:text-5xl md:text-6xl lg:text-7xl mb-4 animate-fadeUp delay-2" style="color:var(--text-primary)">
+            Вкусные обеды<br>
+            <span class="gradient-text">с доставкой</span>
+          </h1>
+
+          <p class="text-base sm:text-lg md:text-xl max-w-xl mx-auto md:mx-0 mb-6 sm:mb-8 animate-fadeUp delay-3" style="color:var(--text-muted);line-height:1.6">
+            Выбирайте дату, блюда, напитки и хлеб. Мы готовим из свежих продуктов и привозим обед точно к нужному времени.
+          </p>
+
+          <div class="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-3 sm:gap-4 animate-fadeUp delay-4">
+            <a href="#order" class="btn btn-primary" style="width:100%;max-width:260px">
+              <svg class="icon"><use href="#i-clipboard-plus"/></svg>
+              <span>Оформить заказ</span>
+            </a>
+            <a href="#contacts" class="btn btn-secondary" style="width:100%;max-width:260px">
+              <svg class="icon"><use href="#i-phone"/></svg>
+              <span>Связаться</span>
+            </a>
+          </div>
+
+          <div class="grid-4 mt-8 sm:mt-12 animate-fadeUp delay-5">
+            <div class="glass service-card service-card-static">
+              <div class="icon-box icon-box-mint"><svg class="icon"><use href="#i-leaf"/></svg></div>
+              <h3 class="title text-lg" style="color:var(--text-primary)">Свежие продукты</h3>
+              <p class="text-sm" style="color:var(--text-muted);line-height:1.6">Ингредиенты закупаем каждое утро и готовим перед доставкой.</p>
+            </div>
+            <div class="glass service-card service-card-static">
+              <div class="icon-box icon-box-blue"><svg class="icon"><use href="#i-utensils"/></svg></div>
+              <h3 class="title text-lg" style="color:var(--text-primary)">Свой набор</h3>
+              <p class="text-sm" style="color:var(--text-muted);line-height:1.6">Три блюда, напиток и хлеб — соберите обед под свой вкус.</p>
+            </div>
+            <div class="glass service-card service-card-static">
+              <div class="icon-box icon-box-coral"><svg class="icon"><use href="#i-clock"/></svg></div>
+              <h3 class="title text-lg" style="color:var(--text-primary)">Вовремя доставка</h3>
+              <p class="text-sm" style="color:var(--text-muted);line-height:1.6">Привозим заказ к назначенному часу, пока всё горячее.</p>
+            </div>
+            <div class="glass service-card service-card-static">
+              <div class="icon-box icon-box-violet"><svg class="icon"><use href="#i-smile"/></svg></div>
+              <h3 class="title text-lg" style="color:var(--text-primary)">Для всех</h3>
+              <p class="text-sm" style="color:var(--text-muted);line-height:1.6">Офис, дом, удалёнка — доставим, где вам удобно.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-illustration">
+          <div style="position:relative;max-width:320px;width:100%">
+            <div class="glass pop-badge shadow-xl animate-fadeUp delay-5" style="position:absolute;top:-2rem;right:-1.5rem;border-color:rgba(37,99,235,0.2);box-shadow:0 20px 40px rgba(0,0,0,0.12)">
+              <svg class="icon" style="color:var(--primary)"><use href="#i-soup"/></svg>
+              <span class="text-sm font-bold whitespace-nowrap" style="color:var(--text-primary)">Ваш обед готовится!</span>
+            </div>
+            <svg viewBox="0 0 320 320" style="width:100%;height:auto;filter:drop-shadow(0 25px 40px rgba(0,0,0,0.12))" aria-hidden="true">
+              <defs>
+                <linearGradient id="plateGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#f1f5f9"/>
+                </linearGradient>
+                <linearGradient id="meatGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#D97706"/><stop offset="100%" stop-color="#B45309"/>
+                </linearGradient>
+                <linearGradient id="beanGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#4ADE80"/><stop offset="100%" stop-color="#16A34A"/>
+                </linearGradient>
+                <radialGradient id="tomatoGrad" cx="30%" cy="30%">
+                  <stop offset="0%" stop-color="#FCA5A5"/><stop offset="100%" stop-color="#DC2626"/>
+                </radialGradient>
+                <linearGradient id="lemonGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#FEF08A"/><stop offset="100%" stop-color="#EAB308"/>
+                </linearGradient>
+              </defs>
+              <ellipse cx="160" cy="160" rx="140" ry="125" fill="url(#plateGrad)" stroke="#E2E8F0" stroke-width="4"/>
+              <ellipse cx="160" cy="160" rx="105" ry="92" fill="#F8FAFC"/>
+              <path d="M100 135 Q120 115 160 125 Q195 135 185 170 Q175 200 135 195 Q95 188 100 135" fill="url(#meatGrad)"/>
+              <path d="M115 150 L170 160" stroke="#78350F" stroke-width="2" opacity="0.35" stroke-linecap="round"/>
+              <path d="M110 165 L178 175" stroke="#78350F" stroke-width="2" opacity="0.35" stroke-linecap="round"/>
+              <path d="M205 115 Q225 105 235 125 Q230 145 210 140 Q195 135 205 115" fill="url(#beanGrad)"/>
+              <path d="M215 135 Q235 130 240 150 Q230 165 213 157 Q200 150 215 135" fill="url(#beanGrad)"/>
+              <circle cx="115" cy="205" r="16" fill="url(#tomatoGrad)"/>
+              <circle cx="145" cy="215" r="13" fill="url(#tomatoGrad)"/>
+              <path d="M215 185 Q235 175 245 195 Q230 215 210 205 Q200 195 215 185" fill="url(#lemonGrad)"/>
+              <path d="M150 110 Q160 90 180 105 Q165 125 150 110" fill="#22C55E"/>
+              <path d="M165 108 Q175 95 188 108" fill="none" stroke="#16A34A" stroke-width="2" stroke-linecap="round"/>
+              <path d="M135 65 Q145 45 135 25" stroke="#94A3B8" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.45"/>
+              <path d="M165 60 Q175 40 165 20" stroke="#94A3B8" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.45"/>
+              <path d="M195 65 Q205 45 195 25" stroke="#94A3B8" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.45"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Wave divider -->
+  <div class="relative z-10" style="margin-top:-1px">
+    <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" style="display:block;width:100%;height:80px">
+      <path d="M0 120L48 110C96 100 192 80 288 70C384 60 480 60 576 65C672 70 768 80 864 85C960 90 1056 90 1152 85C1248 80 1344 70 1392 65L1440 60V120H1392C1344 120 1248 120 1152 120C1056 120 960 120 864 120C768 120 672 120 576 120C480 120 384 120 288 120C192 120 96 120 48 120H0Z" fill="var(--bg-base)"/>
+    </svg>
+  </div>
+
+  <!-- Why us -->
+  <section id="why" class="section" style="background:linear-gradient(180deg,var(--bg-base) 0%,rgba(240,248,255,0.5) 50%,var(--bg-base) 100%)">
+    <div class="section-blobs" aria-hidden="true">
+      <div class="blob" style="width:400px;height:400px;background:var(--blob-3);top:10%;left:-8%;animation-delay:-3s;"></div>
+      <div class="blob" style="width:380px;height:380px;background:var(--blob-1);bottom:5%;right:-6%;animation-delay:-9s;"></div>
+    </div>
+    <div class="container relative z-10">
+      <div class="text-center mb-12 reveal">
+        <span class="text-xs sm:text-sm font-semibold tracking-wider uppercase mb-3 block" style="color:var(--accent)">Почему мы</span>
+        <h2 class="title text-3xl sm:text-4xl md:text-5xl mb-4" style="color:var(--text-primary)">Обеды, которые хочется есть</h2>
+        <p class="max-w-xl mx-auto text-sm sm:text-base" style="color:var(--text-muted)">Готовим с заботой о вкусе, порции и вашем времени</p>
+      </div>
+
+      <div class="grid-features">
+        <div class="reveal glass service-card" style="transition-delay:0.05s">
+          <div class="icon-box icon-box-mint mb-4"><svg class="icon"><use href="#i-leaf"/></svg></div>
+          <h3 class="title text-lg mb-2" style="color:var(--text-primary)">Свежие продукты</h3>
+          <p class="text-sm" style="color:var(--text-muted);line-height:1.6">Закупаем ингредиенты ежедневно и готовим перед доставкой.</p>
+        </div>
+        <div class="reveal glass service-card" style="transition-delay:0.1s">
+          <div class="icon-box icon-box-blue mb-4"><svg class="icon"><use href="#i-utensils"/></svg></div>
+          <h3 class="title text-lg mb-2" style="color:var(--text-primary)">Собери свой обед</h3>
+          <p class="text-sm" style="color:var(--text-muted);line-height:1.6">Три блюда, напиток и хлеб — выбирайте то, что любите.</p>
+        </div>
+        <div class="reveal glass service-card" style="transition-delay:0.15s">
+          <div class="icon-box icon-box-coral mb-4"><svg class="icon"><use href="#i-clock"/></svg></div>
+          <h3 class="title text-lg mb-2" style="color:var(--text-primary)">Точно ко времени</h3>
+          <p class="text-sm" style="color:var(--text-muted);line-height:1.6">Привозим обед к назначенному часу — горячим и аккуратно упакованным.</p>
+        </div>
+        <div class="reveal glass service-card" style="transition-delay:0.2s">
+          <div class="icon-box icon-box-violet mb-4"><svg class="icon"><use href="#i-smile"/></svg></div>
+          <h3 class="title text-lg mb-2" style="color:var(--text-primary)">Без лишних забот</h3>
+          <p class="text-sm" style="color:var(--text-muted);line-height:1.6">Оформите заказ за минуту, а об остальном позаботимся мы.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how" class="section">
+    <div class="section-blobs" aria-hidden="true">
+      <div class="blob" style="width:400px;height:400px;background:var(--blob-2);top:0%;right:-8%;animation-delay:-4s;"></div>
+    </div>
+    <div class="container relative z-10">
+      <div class="text-center mb-12 reveal">
+        <span class="text-xs sm:text-sm font-semibold tracking-wider uppercase mb-3 block" style="color:var(--primary)">Как заказать</span>
+        <h2 class="title text-3xl sm:text-4xl md:text-5xl mb-4" style="color:var(--text-primary)">Всего 4 простых шага</h2>
+      </div>
+
+      <div class="grid-4 gap-6">
+        <div class="reveal text-center" style="transition-delay:0.05s">
+          <div class="icon-box icon-box-blue mx-auto mb-5" style="width:3.5rem;height:3.5rem;font-size:1.5rem"><svg class="icon"><use href="#i-calendar"/></svg></div>
+          <h3 class="title text-lg mb-2" style="color:var(--text-primary)">1. Выберите дату</h3>
+          <p class="text-sm" style="color:var(--text-muted)">Укажите, на какой день нужен обед.</p>
+        </div>
+        <div class="reveal text-center" style="transition-delay:0.15s">
+          <div class="icon-box icon-box-coral mx-auto mb-5" style="width:3.5rem;height:3.5rem;font-size:1.5rem"><svg class="icon"><use href="#i-clipboard-list"/></svg></div>
+          <h3 class="title text-lg mb-2" style="color:var(--text-primary)">2. Соберите набор</h3>
+          <p class="text-sm" style="color:var(--text-muted)">Выберите три блюда, напиток и хлеб.</p>
+        </div>
+        <div class="reveal text-center" style="transition-delay:0.25s">
+          <div class="icon-box icon-box-mint mx-auto mb-5" style="width:3.5rem;height:3.5rem;font-size:1.5rem"><svg class="icon"><use href="#i-chef-hat"/></svg></div>
+          <h3 class="title text-lg mb-2" style="color:var(--text-primary)">3. Мы готовим</h3>
+          <p class="text-sm" style="color:var(--text-muted)">Готовим из свежих продуктов в день доставки.</p>
+        </div>
+        <div class="reveal text-center" style="transition-delay:0.35s">
+          <div class="icon-box icon-box-violet mx-auto mb-5" style="width:3.5rem;height:3.5rem;font-size:1.5rem"><svg class="icon"><use href="#i-truck"/></svg></div>
+          <h3 class="title text-lg mb-2" style="color:var(--text-primary)">4. Доставляем</h3>
+          <p class="text-sm" style="color:var(--text-muted)">Привозим обед точно к назначенному времени.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Order form -->
+  <section id="order" class="section" style="background:linear-gradient(180deg,var(--bg-base) 0%,rgba(255,240,230,0.5) 50%,var(--bg-base) 100%)">
+    <div class="section-blobs" aria-hidden="true">
+      <div class="blob" style="width:500px;height:500px;background:var(--blob-1);top:-15%;left:-10%;animation-delay:0s;"></div>
+      <div class="blob" style="width:480px;height:480px;background:var(--blob-2);bottom:-20%;right:-8%;animation-delay:-8s;"></div>
+    </div>
+    <div class="container relative z-10">
+      <div class="text-center mb-10 reveal">
+        <span class="text-xs sm:text-sm font-semibold tracking-wider uppercase mb-3 block" style="color:var(--primary)">Оформление заказа</span>
+        <h2 class="title text-3xl sm:text-4xl md:text-5xl mb-4" style="color:var(--text-primary)">Закажите обед</h2>
+        <p class="max-w-xl mx-auto text-sm sm:text-base" style="color:var(--text-muted)">Заполните форму, и мы свяжемся с вами для подтверждения</p>
+      </div>
+
+      <div class="reveal glass order-card" style="max-width:800px;margin:0 auto;background:linear-gradient(135deg,rgba(37,99,235,0.06) 0%,rgba(139,92,246,0.06) 50%,rgba(225,29,72,0.04) 100%)">
+        <div style="position:absolute;top:-5rem;left:-5rem;width:15rem;height:15rem;border-radius:50%;filter:blur(60px);background:var(--blob-1);opacity:0.8"></div>
+        <div style="position:absolute;bottom:-5rem;right:-5rem;width:15rem;height:15rem;border-radius:50%;filter:blur(60px);background:var(--blob-2);opacity:0.8"></div>
+
+        <form id="orderForm" class="relative z-10">
+          <div class="grid-2 mb-6">
+            <div>
+              <label class="form-label" for="company_select">Компания <span class="required">*</span></label>
+              <select id="company_select" class="form-input" required>
+                <option value="" disabled selected>Выберите компанию</option>
+              </select>
+              <input type="text" id="company_name_manual" class="form-input" placeholder="Название компании" style="display:none;margin-top:0.5rem;">
+              <input type="hidden" id="company_name" name="company_name">
+            </div>
+            <div>
+              <label class="form-label" for="delivery_date">Дата доставки <span class="required">*</span></label>
+              <input id="delivery_date" name="delivery_date" type="date" required class="form-input">
+            </div>
+          </div>
+
+          <div class="grid-2 mb-6">
+            <div>
+              <label class="form-label" for="customer_name">Ваше имя <span class="required">*</span></label>
+              <input id="customer_name" name="customer_name" required class="form-input" placeholder="Иван Иванов">
+            </div>
+            <div>
+              <label class="form-label" for="customer_phone">Телефон <span class="required">*</span></label>
+              <input id="customer_phone" name="customer_phone" type="tel" required class="form-input" placeholder="+7 (999) 000-00-00">
+            </div>
+          </div>
+
+          <div class="mb-6">
+            <h3 class="title text-lg mb-4 flex items-center gap-2" style="color:var(--text-primary)">
+              <svg class="icon" style="color:var(--primary)"><use href="#i-soup"/></svg>
+              Состав обеда
+            </h3>
+
+            <div class="space-y-4">
+              <div>
+                <label class="form-label" for="dish1">Блюдо 1 <span class="required">*</span></label>
+                <input id="dish1" name="dish1" required class="form-input" placeholder="Первое блюдо">
+              </div>
+              <div>
+                <label class="form-label" for="dish2">Блюдо 2 <span class="required">*</span></label>
+                <input id="dish2" name="dish2" required class="form-input" placeholder="Второе блюдо">
+              </div>
+              <div>
+                <label class="form-label" for="dish3">Блюдо 3 <span class="required">*</span></label>
+                <input id="dish3" name="dish3" required class="form-input" placeholder="Третье блюдо">
+              </div>
+            </div>
+
+            <div class="grid-2 mt-4">
+              <div>
+                <label class="form-label" for="drink">Напиток</label>
+                <input id="drink" name="drink" class="form-input" placeholder="Компот, чай, сок…">
+              </div>
+              <div>
+                <label class="form-label" for="bread">Хлебобулочное изделие</label>
+                <input id="bread" name="bread" class="form-input" placeholder="Багет, булочка…">
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <label class="form-label" for="comment">Комментарий</label>
+              <textarea id="comment" name="comment" rows="3" class="form-input" placeholder="Особые пожелания, аллергии, время доставки…"></textarea>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width:100%">
+            <span class="spinner" hidden></span>
+            <span class="btn-text">Оформить заказ</span>
+          </button>
+
+          <div id="result" class="result" role="status" aria-live="polite"></div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contacts -->
+  <section id="contacts" class="section">
+    <div class="section-blobs" aria-hidden="true">
+      <div class="blob" style="width:400px;height:400px;background:var(--blob-3);top:5%;left:-8%;animation-delay:-3s;"></div>
+      <div class="blob" style="width:350px;height:350px;background:var(--blob-4);bottom:10%;right:-6%;animation-delay:-9s;"></div>
+    </div>
+    <div class="container relative z-10">
+      <div class="text-center mb-10 reveal">
+        <span class="text-xs sm:text-sm font-semibold tracking-wider uppercase mb-3 block" style="color:var(--accent)">Контакты</span>
+        <h2 class="title text-3xl sm:text-4xl md:text-5xl mb-4" style="color:var(--text-primary)">Свяжитесь с нами</h2>
+        <p class="max-w-xl mx-auto text-sm sm:text-base" style="color:var(--text-muted)">Готовы ответить на вопросы и помочь с заказом</p>
+      </div>
+
+      <div class="grid-2" style="max-width:800px;margin:0 auto">
+        <div class="glass contact-card reveal">
+          <h3 class="title text-lg sm:text-xl mb-5" style="color:var(--text-primary)">Контактная информация</h3>
+          <div class="contact-list">
+            <div class="contact-row">
+              <div class="icon-box icon-box-blue"><svg class="icon"><use href="#i-phone"/></svg></div>
+              <div>
+                <div class="text-xs sm:text-sm" style="color:var(--text-muted)">Телефон</div>
+                <span class="font-semibold text-sm sm:text-base" style="color:var(--text-primary)">+7 (XXX) XXX-XX-XX</span>
+              </div>
+            </div>
+            <div class="contact-row">
+              <div class="icon-box icon-box-coral"><svg class="icon"><use href="#i-mail"/></svg></div>
+              <div style="display:flex;flex-direction:column;gap:0.5rem">
+                <div class="text-xs sm:text-sm" style="color:var(--text-muted)">Обратная связь</div>
+                <a href="#max-messenger" class="btn btn-primary" style="padding:0.55rem 1rem;font-size:0.85rem;width:fit-content">Написать в Max</a>
+                <a href="mailto:info@cookandfry.example" class="btn btn-secondary" style="padding:0.55rem 1rem;font-size:0.85rem;width:fit-content">Написать на почту</a>
+              </div>
+            </div>
+            <div class="contact-row">
+              <div class="icon-box icon-box-mint"><svg class="icon"><use href="#i-clock"/></svg></div>
+              <div>
+                <div class="text-xs sm:text-sm" style="color:var(--text-muted)">Режим работы</div>
+                <span class="font-semibold text-sm sm:text-base" style="color:var(--text-primary)">пн–пт 9:00–18:00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass contact-card reveal" style="transition-delay:0.1s;display:flex;flex-direction:column;justify-content:center">
+          <h3 class="title text-lg sm:text-xl mb-3" style="color:var(--text-primary)">Готовы заказать?</h3>
+          <p class="text-sm sm:text-base mb-5" style="color:var(--text-muted)">Оформите заявку прямо сейчас — мы перезвоним для подтверждения.</p>
+          <a href="#order" class="btn btn-primary" style="width:100%">
+            <svg class="icon"><use href="#i-clipboard-plus"/></svg>
+            <span>Перейти к заказу</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="relative z-10 border-t" style="border-color:var(--card-border);padding:2.5rem 0">
+    <div class="container">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center text-white" style="background:linear-gradient(135deg,var(--primary),var(--primary-2))">
+            <svg class="icon"><use href="#i-utensils"/></svg>
+          </div>
+          <div>
+            <span class="title text-base sm:text-lg" style="color:var(--text-primary)">Cook and Fry</span>
+            <span class="block text-xs" style="color:var(--text-muted)">Доставка обедов</span>
+          </div>
+        </div>
+        <div class="text-xs sm:text-sm text-center md:text-right" style="color:var(--text-muted)">
+          © 2026 Cook and Fry. Все права защищены.
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      function sendLog(type, message, stack) {
+        try {
+          fetch('/api/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: type,
+              message: message,
+              stack: stack || '',
+              url: location.href,
+              userAgent: navigator.userAgent
+            })
+          }).catch(function () {});
+        } catch (e) {}
+      }
+
+      window.addEventListener('error', function (e) {
+        sendLog('error', e.message, e.error && e.error.stack ? e.error.stack : '');
+      });
+      window.addEventListener('unhandledrejection', function (e) {
+        var reason = e.reason;
+        var msg = reason && reason.message ? reason.message : String(reason);
+        var stack = reason && reason.stack ? reason.stack : '';
+        sendLog('unhandledrejection', msg, stack);
+      });
+
+      var root = document.documentElement;
+
+      function updateThemeIcons() {
+        var isDark = root.getAttribute('data-theme') === 'dark';
+        var sun = document.getElementById('icon-sun');
+        var moon = document.getElementById('icon-moon');
+        var sunM = document.getElementById('icon-sun-mobile');
+        var moonM = document.getElementById('icon-moon-mobile');
+        if (sun) sun.classList.toggle('hidden', !isDark);
+        if (moon) moon.classList.toggle('hidden', isDark);
+        if (sunM) sunM.classList.toggle('hidden', !isDark);
+        if (moonM) moonM.classList.toggle('hidden', isDark);
+      }
+
+      function toggleTheme() {
+        var isDark = root.getAttribute('data-theme') === 'dark';
+        var next = isDark ? 'light' : 'dark';
+        root.setAttribute('data-theme', next);
+        try { localStorage.setItem('cf-theme', next); } catch (e) {}
+        updateThemeIcons();
+      }
+
+      var themeBtn = document.getElementById('theme-toggle');
+      var themeBtnM = document.getElementById('theme-toggle-mobile');
+      if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
+      if (themeBtnM) themeBtnM.addEventListener('click', toggleTheme);
+      updateThemeIcons();
+
+      var menuToggle = document.getElementById('menu-toggle');
+      var mobileMenu = document.getElementById('mobile-menu');
+      var iconMenu = document.getElementById('icon-menu');
+      var iconClose = document.getElementById('icon-close');
+      if (menuToggle && mobileMenu) {
+        menuToggle.addEventListener('click', function () {
+          var open = mobileMenu.classList.toggle('open');
+          if (iconMenu) iconMenu.classList.toggle('hidden', open);
+          if (iconClose) iconClose.classList.toggle('hidden', !open);
+        });
+        mobileMenu.querySelectorAll('a').forEach(function (a) {
+          a.addEventListener('click', function () {
+            mobileMenu.classList.remove('open');
+            if (iconMenu) iconMenu.classList.remove('hidden');
+            if (iconClose) iconClose.classList.add('hidden');
+          });
+        });
+      }
+
+      var revealEls = document.querySelectorAll('.reveal');
+      if ('IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.1, rootMargin: '0px 0px -60px 0px' });
+        revealEls.forEach(function (el) { observer.observe(el); });
+      } else {
+        revealEls.forEach(function (el) { el.classList.add('visible'); });
+      }
+
+      function loadCompanySelect() {
+        var select = document.getElementById('company_select');
+        var manualInput = document.getElementById('company_name_manual');
+        var hidden = document.getElementById('company_name');
+        if (!select || !manualInput || !hidden) return;
+
+        function updateValue() {
+          if (select.value === 'manual') {
+            manualInput.style.display = 'block';
+            manualInput.required = true;
+            hidden.value = manualInput.value.trim();
+          } else {
+            manualInput.style.display = 'none';
+            manualInput.required = false;
+            hidden.value = select.value;
+          }
+        }
+
+        select.addEventListener('change', updateValue);
+        manualInput.addEventListener('input', function () {
+          if (select.value === 'manual') hidden.value = manualInput.value.trim();
+        });
+
+        function setOptions(companies, fallback) {
+          select.innerHTML = '';
+          var placeholder = document.createElement('option');
+          placeholder.value = '';
+          placeholder.textContent = 'Выберите компанию';
+          placeholder.disabled = true;
+          select.appendChild(placeholder);
+
+          companies.forEach(function (name) {
+            var opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            select.appendChild(opt);
+          });
+
+          var manualOpt = document.createElement('option');
+          manualOpt.value = 'manual';
+          manualOpt.textContent = 'Ввести вручную';
+          select.appendChild(manualOpt);
+
+          if (fallback) {
+            select.value = companies[0] || '';
+          }
+          updateValue();
+        }
+
+        if (typeof fetch !== 'function') {
+          setOptions(['Cook and Fry'], true);
+          return;
+        }
+
+        fetch('/api/orders/companies')
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            var companies = data.companies;
+            if (!Array.isArray(companies) || companies.length === 0) throw new Error('empty');
+            setOptions(companies, false);
+          })
+          .catch(function () {
+            setOptions(['Cook and Fry'], true);
+          });
+      }
+      loadCompanySelect();
+
+      var form = document.getElementById('orderForm');
+      var resultEl = document.getElementById('result');
+      var dateInput = document.getElementById('delivery_date');
+
+      function setMinDate() {
+        dateInput.min = new Date().toISOString().split('T')[0];
+      }
+      setMinDate();
+
+      if (form) {
+        var btn = form.querySelector('button[type="submit"]');
+        var btnText = btn.querySelector('.btn-text');
+        var spinner = btn.querySelector('.spinner');
+
+        function setLoading(loading) {
+          btn.disabled = loading;
+          spinner.hidden = !loading;
+          btnText.textContent = loading ? 'Отправка…' : 'Оформить заказ';
+        }
+
+        function showSuccess(orderNumber) {
+          resultEl.className = 'result success fade-in';
+          resultEl.innerHTML = '<div class="result-title">Заказ принят!</div>Номер вашего заказа: <strong>' + orderNumber + '</strong>. Мы свяжемся с вами для подтверждения.';
+        }
+
+        function showError(message) {
+          resultEl.className = 'result error fade-in';
+          resultEl.innerHTML = '<div class="result-title">Не удалось оформить заказ</div>' + message;
+        }
+
+        form.addEventListener('submit', function (e) {
+          e.preventDefault();
+          setLoading(true);
+          resultEl.className = 'result';
+          resultEl.innerHTML = '';
+
+          fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(Object.fromEntries(new FormData(form)))
+          })
+          .then(function (res) { return res.json(); })
+          .then(function (json) {
+            if (json.success) {
+              showSuccess(json.order.order_number);
+              form.reset();
+              setMinDate();
+            } else {
+              showError(json.error || 'Проверьте введённые данные и попробуйте ещё раз.');
+            }
+          })
+          .catch(function (err) {
+            sendLog('network', err.message, err.stack);
+            showError('Ошибка сети. Проверьте соединение и попробуйте позже.');
+          })
+          .finally(function () {
+            setLoading(false);
+          });
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
