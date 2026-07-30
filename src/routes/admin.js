@@ -49,7 +49,7 @@ router.get("/orders", (req, res, next) => {
       sql += " AND (customer_name LIKE ? OR customer_phone LIKE ? OR order_number LIKE ?)";
       params.push(`%${search}%`, `%${search}%`, `%${search}%`);
     }
-    sql += " ORDER BY delivery_date ASC, created_at DESC LIMIT ? OFFSET ?";
+    sql += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
     params.push(Number(limit), Number(offset));
 
     const orders = db.prepare(sql).all(...params);
