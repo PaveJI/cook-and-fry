@@ -1,0 +1,25 @@
+{
+  "name": "Cook and Fry",
+  "short_name": "Cook and Fry",
+  "description": "Заказ обедов с доставкой",
+  "start_url": "/pwa.html",
+  "display": "standalone",
+  "background_color": "#f0f4ff",
+  "theme_color": "#2563EB",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

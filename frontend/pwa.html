@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#2563EB">
+  <meta name="description" content="Cook and Fry — заказ обедов с доставкой">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <title>Cook and Fry — Заказ обеда</title>
+  <style>
+    :root {
+      --bg-base: #f0f4ff;
+      --text-primary: #0a0f1e;
+      --text-secondary: #1e293b;
+      --text-muted: #475569;
+      --glass-bg: rgba(255,255,255,0.78);
+      --glass-border: rgba(255,255,255,0.6);
+      --input-bg: rgba(0,0,0,0.03);
+      --input-border: rgba(0,0,0,0.08);
+      --primary: #2563EB;
+      --primary-2: #7C3AED;
+      --accent: #E11D48;
+      --success: #059669;
+      --error: #E11D48;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-base: #020205;
+        --text-primary: #f1f5f9;
+        --text-secondary: #cbd5e1;
+        --text-muted: #94a3b8;
+        --glass-bg: rgba(15,23,42,0.65);
+        --glass-border: rgba(255,255,255,0.12);
+        --input-bg: rgba(255,255,255,0.05);
+        --input-border: rgba(255,255,255,0.10);
+        --primary: #3B82F6;
+        --primary-2: #8B5CF6;
+      }
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    }
+    .container { width: 100%; max-width: 560px; margin: 0 auto; padding: 1.25rem; }
+    header { text-align: center; padding: 1.5rem 0 0.5rem; }
+    .brand {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .tagline { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem; }
+    .card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px) saturate(1.3);
+      -webkit-backdrop-filter: blur(20px) saturate(1.3);
+      border: 1px solid var(--glass-border);
+      border-radius: 1.5rem;
+      padding: 1.25rem;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+    }
+    .section-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin: 0 0 0.25rem;
+      color: var(--text-primary);
+    }
+    .section-subtitle { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem; }
+    .form-label { display: block; margin-bottom: 0.35rem; font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); }
+    .form-input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      border-radius: 0.875rem;
+      border: 1.5px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text-primary);
+      font-size: 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+    .form-input::placeholder { color: var(--text-muted); opacity: 0.7; }
+    select.form-input { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.85rem center; padding-right: 2.5rem; }
+    textarea.form-input { resize: vertical; min-height: 84px; font-family: inherit; }
+    .field { margin-bottom: 1rem; }
+    .required { color: var(--accent); margin-left: 0.15rem; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+      width: 100%; padding: 1rem; border-radius: 1rem; border: none;
+      font-size: 1rem; font-weight: 700; cursor: pointer; text-decoration: none;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: #fff; transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.75; cursor: not-allowed; }
+    .result { display: none; margin-top: 1rem; padding: 1rem; border-radius: 0.875rem; font-size: 0.95rem; }
+    .result.success { display: block; background: rgba(16,185,129,0.12); color: var(--success); border: 1px solid rgba(16,185,129,0.25); }
+    .result.error { display: block; background: rgba(225,29,72,0.12); color: var(--error); border: 1px solid rgba(225,29,72,0.25); }
+    .offline-banner {
+      display: none; text-align: center; padding: 0.75rem 1rem;
+      background: rgba(225,29,72,0.12); color: var(--error); border-bottom: 1px solid rgba(225,29,72,0.2);
+      font-size: 0.9rem; font-weight: 600;
+    }
+    .offline-banner.visible { display: block; }
+    .spinner { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    footer { text-align: center; color: var(--text-muted); font-size: 0.75rem; padding: 1.5rem 0; }
+  </style>
+</head>
+<body>
+  <div id="offlineBanner" class="offline-banner">Нет подключения. Заказ можно оформить, когда появится интернет.</div>
+
+  <header>
+    <div class="brand">Cook and Fry</div>
+    <div class="tagline">Доставка обедов</div>
+  </header>
+
+  <main class="container">
+    <div class="card">
+      <h1 class="section-title">Оформление заказа</h1>
+      <p class="section-subtitle">Заполните форму, и мы свяжемся для подтверждения</p>
+
+      <form id="orderForm">
+        <div class="field">
+          <label class="form-label" for="company_select">Компания <span class="required">*</span></label>
+          <select id="company_select" class="form-input" required>
+            <option value="" disabled selected>Выберите компанию</option>
+          </select>
+          <input type="text" id="company_name_manual" class="form-input" placeholder="Название компании" style="display:none;margin-top:0.5rem;">
+          <input type="hidden" id="company_name" name="company_name">
+        </div>
+
+        <div class="field">
+          <label class="form-label" for="delivery_date">Дата доставки <span class="required">*</span></label>
+          <input id="delivery_date" name="delivery_date" type="date" required class="form-input">
+        </div>
+
+        <div class="field">
+          <label class="form-label" for="customer_name">Ваше имя <span class="required">*</span></label>
+          <input id="customer_name" name="customer_name" required class="form-input" placeholder="Иван Иванов">
+        </div>
+
+        <div class="field">
+          <label class="form-label" for="customer_phone">Телефон <span class="required">*</span></label>
+          <input id="customer_phone" name="customer_phone" type="tel" required class="form-input" placeholder="+7 (999) 000-00-00">
+        </div>
+
+        <div class="field">
+          <label class="form-label" for="dish1">Блюдо 1 <span class="required">*</span></label>
+          <input id="dish1" name="dish1" required class="form-input" placeholder="Первое блюдо">
+        </div>
+
+        <div class="field">
+          <label class="form-label" for="dish2">Блюдо 2 <span class="required">*</span></label>
+          <input id="dish2" name="dish2" required class="form-input" placeholder="Второе блюдо">
+        </div>
+
+        <div class="field">
+          <label class="form-label" for="dish3">Блюдо 3 <span class="required">*</span></label>
+          <input id="dish3" name="dish3" required class="form-input" placeholder="Третье блюдо">
+        </div>
+
+        <div class="field">
+          <label class="form-label" for="drink">Напиток</label>
+          <input id="drink" name="drink" class="form-input" placeholder="Компот, чай, сок…">
+        </div>
+
+        <div class="field">
+          <label class="form-label" for="bread">Хлебобулочное изделие</label>
+          <input id="bread" name="bread" class="form-input" placeholder="Багет, булочка…">
+        </div>
+
+        <div class="field">
+          <label class="form-label" for="comment">Комментарий</label>
+          <textarea id="comment" name="comment" rows="3" class="form-input" placeholder="Особые пожелания, аллергии, время доставки…"></textarea>
+        </div>
+
+        <button type="submit" class="btn" id="submitBtn">
+          <span class="spinner" id="spinner"></span>
+          <span id="btnText">Оформить заказ</span>
+        </button>
+
+        <div id="result" class="result" role="status" aria-live="polite"></div>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    © 2026 Cook and Fry
+  </footer>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // Register service worker
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(function () {});
+      }
+
+      // Offline banner
+      var offlineBanner = document.getElementById('offlineBanner');
+      function updateOnlineStatus() {
+        offlineBanner.classList.toggle('visible', !navigator.onLine);
+      }
+      window.addEventListener('online', updateOnlineStatus);
+      window.addEventListener('offline', updateOnlineStatus);
+      updateOnlineStatus();
+
+      // Phone mask
+      var phoneInput = document.getElementById('customer_phone');
+      phoneInput.addEventListener('input', function (e) {
+        var value = e.target.value.replace(/\D/g, '');
+        if (value.startsWith('7') || value.startsWith('8')) value = value.slice(1);
+        var formatted = '+7';
+        if (value.length > 0) formatted += ' (' + value.slice(0, 3);
+        if (value.length >= 3) formatted += ')';
+        if (value.length > 3) formatted += ' ' + value.slice(3, 6);
+        if (value.length > 6) formatted += '-' + value.slice(6, 8);
+        if (value.length > 8) formatted += '-' + value.slice(8, 10);
+        e.target.value = formatted;
+      });
+
+      // Company select
+      var companySelect = document.getElementById('company_select');
+      var companyManual = document.getElementById('company_name_manual');
+      var companyHidden = document.getElementById('company_name');
+
+      function updateCompanyValue() {
+        if (companySelect.value === 'manual') {
+          companyManual.style.display = 'block';
+          companyManual.required = true;
+          companyHidden.value = companyManual.value.trim();
+        } else {
+          companyManual.style.display = 'none';
+          companyManual.required = false;
+          companyHidden.value = companySelect.value;
+        }
+      }
+
+      companySelect.addEventListener('change', updateCompanyValue);
+      companyManual.addEventListener('input', function () {
+        if (companySelect.value === 'manual') companyHidden.value = companyManual.value.trim();
+      });
+
+      function populateCompanies(companies, fallback) {
+        companySelect.innerHTML = '';
+        var placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = 'Выберите компанию';
+        placeholder.disabled = true;
+        companySelect.appendChild(placeholder);
+
+        companies.forEach(function (name) {
+          var opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          companySelect.appendChild(opt);
+        });
+
+        var manualOpt = document.createElement('option');
+        manualOpt.value = 'manual';
+        manualOpt.textContent = 'Ввести вручную';
+        companySelect.appendChild(manualOpt);
+
+        if (fallback && companies.length) {
+          companySelect.value = companies[0];
+        }
+        updateCompanyValue();
+      }
+
+      if (typeof fetch === 'function') {
+        fetch('/api/orders/companies')
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            var companies = data.companies;
+            if (!Array.isArray(companies) || companies.length === 0) throw new Error('empty');
+            populateCompanies(companies, false);
+          })
+          .catch(function () {
+            populateCompanies(['Cook and Fry'], true);
+          });
+      } else {
+        populateCompanies(['Cook and Fry'], true);
+      }
+
+      // Date min = today
+      var dateInput = document.getElementById('delivery_date');
+      dateInput.min = new Date().toISOString().split('T')[0];
+
+      // Form submit
+      var form = document.getElementById('orderForm');
+      var resultEl = document.getElementById('result');
+      var submitBtn = document.getElementById('submitBtn');
+      var btnText = document.getElementById('btnText');
+      var spinner = document.getElementById('spinner');
+
+      function setLoading(loading) {
+        submitBtn.disabled = loading;
+        spinner.style.display = loading ? 'inline-block' : 'none';
+        btnText.textContent = loading ? 'Отправка…' : 'Оформить заказ';
+      }
+
+      function showSuccess(orderNumber) {
+        resultEl.className = 'result success';
+        resultEl.innerHTML = '<strong>Заказ принят!</strong><br>Номер: ' + orderNumber + '. Мы свяжемся для подтверждения.';
+      }
+
+      function showError(message) {
+        resultEl.className = 'result error';
+        resultEl.innerHTML = '<strong>Не удалось оформить заказ</strong><br>' + message;
+      }
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        if (!navigator.onLine) {
+          showError('Нет подключения. Заказ можно оформить, когда появится интернет.');
+          return;
+        }
+
+        setLoading(true);
+        resultEl.className = 'result';
+        resultEl.innerHTML = '';
+
+        fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(Object.fromEntries(new FormData(form)))
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (json) {
+          if (json.success) {
+            showSuccess(json.order.order_number);
+            form.reset();
+            dateInput.min = new Date().toISOString().split('T')[0];
+            populateCompanies(['Cook and Fry'], true);
+          } else {
+            showError(json.error || 'Проверьте введённые данные и попробуйте ещё раз.');
+          }
+        })
+        .catch(function () {
+          showError('Ошибка сети. Проверьте соединение и попробуйте позже.');
+        })
+        .finally(function () {
+          setLoading(false);
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -27,3 +27,8 @@ coverage/
 
 # Local backups
 backups/
+
+# Temporary Python environments for helper scripts
+.pip/
+.pillow/
+.venv-icons/
