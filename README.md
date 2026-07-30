@@ -2,6 +2,12 @@
 
 Сервис приёма заявок на доставку обедов для компании Cook and Fry. Клиент выбирает дату доставки, три блюда, напиток и хлебобулочное изделие. Администратор обрабатывает заказы в панели управления.
 
+## Ссылки
+
+- **Основной сайт:** http://82.26.94.231:3001/
+- **PWA-версия:** http://82.26.94.231:3001/pwa.html
+- **Админ-панель:** http://82.26.94.231:3001/admin.html
+
 ## Быстрый старт
 
 ```bash
@@ -24,9 +30,10 @@ npm run dev
 - `src/db/` — SQLite и миграции
 - `src/middleware/` — middleware аутентификации и ошибок
 - `src/notifications/` — уведомления (Telegram, VK, Max)
-- `frontend/` — форма заказа и админ-панель
+- `frontend/` — форма заказа, PWA и админ-панель
 - `tests/` — тесты
 - `scripts/` — бэкапы и деплой
+- `context/` — планы и контекстные заметки
 
 ## API
 
@@ -34,6 +41,7 @@ npm run dev
 
 - `POST /api/orders` — создать заказ на обед
 - `GET /api/orders/:id` — получить заказ
+- `GET /api/orders/companies` — список компаний для формы заказа
 
 ### Административные (требуется `X-Admin-Token`)
 
@@ -41,6 +49,10 @@ npm run dev
 - `PATCH /api/admin/orders/:id/status` — изменить статус заказа
 - `GET /api/admin/stats` — статистика по статусам
 - `GET /api/admin/companies` — список компаний
+- `GET /api/admin/customers` — список заказчиков
+- `POST /api/admin/customers` — добавить заказчика
+- `PATCH /api/admin/customers/:id` — изменить заказчика
+- `DELETE /api/admin/customers/:id` — удалить заказчика
 
 ## Поля заказа
 
