@@ -54,10 +54,13 @@ router.get("/orders", (req, res, next) => {
       params.push(`%${search}%`, `%${search}%`, `%${search}%`);
     }
 
+    const sortBy = req.query.sort === "created_at" ? "created_at" : "delivery_date";
+    const sortOrder = String(req.query.order).toLowerCase() === "desc" ? "DESC" : "ASC";
+
     const countSql = `SELECT COUNT(*) as total FROM orders ${where}`;
     const { total } = db.prepare(countSql).get(...params);
 
-    const ordersSql = `SELECT * FROM orders ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+    const ordersSql = `SELECT * FROM orders ${where} ORDER BY ${sortBy} ${sortOrder} LIMIT ? OFFSET ?`;
     const orders = db.prepare(ordersSql).all(...params, Number(limit), Number(offset));
 
     res.json({ orders, total });

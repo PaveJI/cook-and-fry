@@ -224,6 +224,11 @@
           </div>
 
           <button @click="resetFilters()" class="btn-secondary">Сбросить фильтры</button>
+
+          <button @click="sortDesc = !sortDesc; page = 1; load()"
+                  class="btn-secondary"
+                  x-text="sortDesc ? 'От нового к старому ↓' : 'От старого к новому ↑'">
+          </button>
         </div>
 
         <!-- Orders table -->
@@ -330,6 +335,7 @@
         page: 1,
         limit: 25,
         total: 0,
+        sortDesc: false,
 
         init() {
           if (this.token) {
@@ -482,6 +488,8 @@
           if (this.filter.date) params.append("date", this.filter.date);
           if (this.filter.dateFrom) params.append("date_from", this.filter.dateFrom);
           if (this.filter.search) params.append("search", this.filter.search);
+          params.append("sort", "delivery_date");
+          params.append("order", this.sortDesc ? "desc" : "asc");
           params.append("limit", this.limit);
           params.append("offset", (this.page - 1) * this.limit);
           return params.toString();
