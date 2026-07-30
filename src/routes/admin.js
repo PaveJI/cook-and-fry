@@ -29,31 +29,38 @@ router.use(adminAuth);
 
 router.get("/orders", (req, res, next) => {
   try {
-    const { status, search, company, date, limit = 50, offset = 0 } = req.query;
-    let sql = "SELECT * FROM orders WHERE 1=1";
+    const { status, search, company, date, date_from, limit = 50, offset = 0 } = req.query;
+    let where = "WHERE 1=1";
     const params = [];
 
     if (status) {
-      sql += " AND status = ?";
+      where += " AND status = ?";
       params.push(status);
     }
     if (company) {
-      sql += " AND company_name = ?";
+      where += " AND company_name = ?";
       params.push(company);
     }
     if (date) {
-      sql += " AND delivery_date = ?";
+      where += " AND delivery_date = ?";
       params.push(date);
     }
+    if (date_from) {
+      where += " AND delivery_date >= ?";
+      params.push(date_from);
+    }
     if (search) {
-      sql += " AND (customer_name LIKE ? OR customer_phone LIKE ? OR order_number LIKE ?)";
+      where += " AND (customer_name LIKE ? OR customer_phone LIKE ? OR order_number LIKE ?)";
       params.push(`%${search}%`, `%${search}%`, `%${search}%`);
     }
-    sql += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
-    params.push(Number(limit), Number(offset));
 
-    const orders = db.prepare(sql).all(...params);
-    res.json({ orders });
+    const countSql = `SELECT COUNT(*) as total FROM orders ${where}`;
+    const { total } = db.prepare(countSql).get(...params);
+
+    const ordersSql = `SELECT * FROM orders ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`;
+    const orders = db.prepare(ordersSql).all(...params, Number(limit), Number(offset));
+
+    res.json({ orders, total });
   } catch (err) {
     next(err);
   }
