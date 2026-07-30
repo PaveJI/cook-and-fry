@@ -88,7 +88,8 @@
     <template x-if="!token">
       <div class="admin-card p-6 max-w-sm mx-auto mt-10">
         <h2 class="text-lg font-semibold mb-4" style="color:var(--text-primary)">Вход</h2>
-        <input x-model="inputToken" type="password" placeholder="Admin token" class="admin-input mb-4">
+        <input x-model="inputUsername" type="text" placeholder="Логин" class="admin-input mb-3">
+        <input x-model="inputPassword" type="password" placeholder="Пароль" class="admin-input mb-4">
         <button @click="login()" class="btn-primary w-full">Войти</button>
         <p x-show="error" x-text="error" class="text-red-600 text-sm mt-2"></p>
       </div>
@@ -286,7 +287,8 @@
     function adminApp() {
       return {
         token: localStorage.getItem("adminToken") || "",
-        inputToken: "",
+        inputUsername: "",
+        inputPassword: "",
         error: "",
         orders: [],
         companies: [],
@@ -306,11 +308,26 @@
         },
 
         async login() {
-          this.token = this.inputToken;
-          localStorage.setItem("adminToken", this.token);
-          await this.loadCustomers();
-          await this.loadCompanies();
-          await this.load();
+          this.error = "";
+          try {
+            const res = await fetch("/api/admin/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ username: this.inputUsername, password: this.inputPassword })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.token) {
+              this.error = data.error || "Неверный логин или пароль";
+              return;
+            }
+            this.token = data.token;
+            localStorage.setItem("adminToken", this.token);
+            await this.loadCustomers();
+            await this.loadCompanies();
+            await this.load();
+          } catch (err) {
+            this.error = "Ошибка соединения";
+          }
         },
 
         logout() {
