@@ -15,7 +15,18 @@ const { requestLogger, clientErrorLogger } = require("./middleware/logger");
 
 const app = express();
 
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.tailwindcss.com", "https://cdn.jsdelivr.net"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com"],
+      imgSrc: ["'self'", "data:"],
+      fontSrc: ["'self'"],
+      connectSrc: ["'self'"]
+    }
+  }
+}));
 app.use(cors({ origin: process.env.BASE_URL || "*" }));
 app.use(express.json());
 app.use(requestLogger);
