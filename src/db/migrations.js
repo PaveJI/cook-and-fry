@@ -47,6 +47,15 @@ const TABLES = {
       username TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL
     )
+  `,
+  customers: `
+    CREATE TABLE IF NOT EXISTS customers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      company_name TEXT UNIQUE NOT NULL,
+      address TEXT,
+      customer_phone TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
   `
 };
 

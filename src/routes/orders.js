@@ -74,7 +74,7 @@ router.post("/", createOrderLimiter, (req, res, next) => {
 
 router.get("/companies", (req, res, next) => {
   try {
-    const rows = db.prepare("SELECT DISTINCT company_name FROM orders ORDER BY company_name").all();
+    const rows = db.prepare("SELECT company_name FROM customers ORDER BY company_name").all();
     res.json({ companies: rows.map((r) => r.company_name) });
   } catch (err) {
     next(err);
