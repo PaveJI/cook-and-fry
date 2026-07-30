@@ -17,14 +17,14 @@ const app = express();
 
 app.use(helmet({
   contentSecurityPolicy: {
+    useDefaults: false,
     directives: {
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.tailwindcss.com", "https://cdn.jsdelivr.net"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com"],
       imgSrc: ["'self'", "data:"],
       fontSrc: ["'self'"],
-      connectSrc: ["'self'"],
-      upgradeInsecureRequests: []
+      connectSrc: ["'self'"]
     }
   }
 }));
