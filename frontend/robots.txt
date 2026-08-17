@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /admin
+Disallow: /admin.html
+Allow: /
+Allow: /landing.html
+Allow: /index.html
+Allow: /pwa.html
+
+Sitemap: https://naobedvbufet.ru/sitemap.xml

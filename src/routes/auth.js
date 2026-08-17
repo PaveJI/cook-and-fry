@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const db = require("../db");
 const config = require("../config");
+const { authLoginLimiter } = require("../middleware/rateLimiter");
 
 const router = express.Router();
 
@@ -46,7 +47,7 @@ router.post("/invite", async (req, res, next) => {
   }
 });
 
-router.post("/login", async (req, res, next) => {
+router.post("/login", authLoginLimiter, async (req, res, next) => {
   try {
     const { phone, password } = req.body;
 

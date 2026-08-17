@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_NAME = "cook-and-fry-pwa-v1";
+const CACHE_NAME = "naobedvbufet-pwa-v1";
 const STATIC_ASSETS = [
   "/pwa.html",
   "/manifest.json",

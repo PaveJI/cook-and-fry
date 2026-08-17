@@ -70,4 +70,20 @@ describe("Lunch Orders API", () => {
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body.orders)).toBe(true);
   });
+
+  it("POST /api/leads creates a lead", async () => {
+    const res = await request(app)
+      .post("/api/leads")
+      .send({ name: "Иван", phone: "+79990000000", company: "ООО Ромашка" });
+    expect(res.status).toBe(201);
+    expect(res.body.success).toBe(true);
+    expect(res.body.lead.name).toBe("Иван");
+    expect(res.body.lead.phone).toBe("+79990000000");
+  });
+
+  it("POST /api/leads validates required fields", async () => {
+    const res = await request(app).post("/api/leads").send({ name: "Иван" });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBeDefined();
+  });
 });

@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Админ-панель — Cook and Fry</title>
+  <meta name="robots" content="noindex, nofollow">
+  <title>Админ-панель — На обед в буфет</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <style>
@@ -80,7 +81,7 @@
     <header class="mb-6 flex items-center justify-between">
       <div>
         <h1 class="text-2xl font-bold" style="color:var(--text-primary)">Админ-панель</h1>
-        <p class="text-sm" style="color:var(--text-muted)">Cook and Fry — управление заказчиками и заявками</p>
+        <p class="text-sm" style="color:var(--text-muted)">На обед в буфет — управление заказчиками и заявками</p>
       </div>
       <template x-if="token">
         <button @click="logout()" class="btn-secondary">Выйти</button>

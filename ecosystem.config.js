@@ -14,12 +14,12 @@ module.exports = {
       env: {
         NODE_ENV: "production",
         PORT: 3001,
-        BASE_URL: "http://82.26.94.231"
+        BASE_URL: "https://naobedvbufet.ru"
       },
       env_production: {
         NODE_ENV: "production",
         PORT: 3001,
-        BASE_URL: "http://82.26.94.231"
+        BASE_URL: "https://naobedvbufet.ru"
       },
       log_date_format: "YYYY-MM-DD HH:mm:ss Z",
       out_file: "./logs/out.log",

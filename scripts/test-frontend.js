@@ -108,7 +108,7 @@ async function run() {
   if (orderCall) {
     const body = JSON.parse(orderCall.opts.body);
     assert(body.customer_name === "Иван", "Form body contains customer name");
-    assert(body.company_name === "Cook and Fry", "Form body contains company name");
+    assert(body.company_name === "На обед в буфет", "Form body contains company name");
   }
   dom4.window.close();
 

@@ -56,6 +56,18 @@ const TABLES = {
       customer_phone TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
+  `,
+  leads: `
+    CREATE TABLE IF NOT EXISTS leads (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      phone TEXT NOT NULL,
+      company TEXT,
+      source TEXT DEFAULT 'landing',
+      status TEXT DEFAULT 'new' CHECK(status IN ('new', 'processed', 'archived')),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
   `
 };
 

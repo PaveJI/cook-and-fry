@@ -1,11 +1,6 @@
 "use strict";
 
-const TelegramBot = require("node-telegram-bot-api");
-const config = require("../config");
-
-const bot = config.notifications.telegram.botToken
-  ? new TelegramBot(config.notifications.telegram.botToken, { polling: false })
-  : null;
+const { notify: hubNotify } = require("../utils/hub-client.cjs");
 
 function formatOrder(order) {
   return [
@@ -27,16 +22,12 @@ function formatOrder(order) {
 }
 
 async function notify(order) {
-  if (!bot || !config.notifications.telegram.adminChatId) {
-    return { provider: "telegram", sent: false, reason: "not configured" };
-  }
-
   try {
-    await bot.sendMessage(config.notifications.telegram.adminChatId, formatOrder(order));
-    return { provider: "telegram", sent: true };
+    await hubNotify("info", formatOrder(order));
+    return { provider: "hub", sent: true };
   } catch (err) {
-    console.error("Telegram notification failed:", err.message);
-    return { provider: "telegram", sent: false, error: err.message };
+    console.error("Hub notification failed:", err.message);
+    return { provider: "hub", sent: false, error: err.message };
   }
 }
 

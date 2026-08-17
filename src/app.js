@@ -7,13 +7,16 @@ const path = require("path");
 
 const healthRouter = require("./routes/health");
 const ordersRouter = require("./routes/orders");
+const leadsRouter = require("./routes/leads");
 const authRouter = require("./routes/auth");
 const clientRouter = require("./routes/client");
 const adminRouter = require("./routes/admin");
 const errorHandler = require("./middleware/errorHandler");
 const { requestLogger, clientErrorLogger } = require("./middleware/logger");
+const config = require("./config");
 
 const app = express();
+app.set("trust proxy", 1);
 
 app.use(helmet({
   contentSecurityPolicy: {
@@ -28,15 +31,59 @@ app.use(helmet({
     }
   }
 }));
-app.use(cors({ origin: process.env.BASE_URL || "*" }));
+const isDev = process.env.NODE_ENV !== "production";
+const allowedOrigins = [
+  config.baseUrl,
+  "https://naobedvbufet.ru",
+  "http://naobedvbufet.ru",
+  ...(isDev ? [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001"
+  ] : []),
+  ...(process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(",").map((o) => o.trim()) : [])
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    callback(null, false);
+  },
+  credentials: true
+}));
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && !allowedOrigins.includes(origin)) {
+    return res.status(403).json({ error: "Origin not allowed" });
+  }
+  next();
+});
 app.use(express.json());
 app.use(requestLogger);
+
+// Главная страница — SEO-лендинг, а не форма заказа
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend", "landing.html"));
+});
 
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, "../frontend")));
 
+// Pretty routes for customer-facing pages
+app.get("/admin", (req, res) => {
+  res.setHeader("X-Robots-Tag", "noindex, nofollow");
+  res.sendFile(path.join(__dirname, "../frontend", "admin.html"));
+});
+app.get("/pwa", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend", "pwa.html"));
+});
+
 app.use("/api/health", healthRouter);
 app.use("/api/orders", ordersRouter);
+app.use("/api/leads", leadsRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/client", clientRouter);
 app.use("/api/admin", adminRouter);

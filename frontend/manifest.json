@@ -1,7 +1,7 @@
 {
-  "name": "Cook and Fry",
-  "short_name": "Cook and Fry",
-  "description": "Заказ обедов с доставкой",
+  "name": "На обед в буфет",
+  "short_name": "На обед в буфет",
+  "description": "Заказ обедов с доставкой в офис и на производство",
   "start_url": "/pwa.html",
   "display": "standalone",
   "background_color": "#f0f4ff",

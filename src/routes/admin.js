@@ -5,10 +5,11 @@ const bcrypt = require("bcryptjs");
 const db = require("../db");
 const adminAuth = require("../middleware/adminAuth");
 const config = require("../config");
+const { adminLoginLimiter } = require("../middleware/rateLimiter");
 
 const router = express.Router();
 
-router.post("/login", async (req, res, next) => {
+router.post("/login", adminLoginLimiter, async (req, res, next) => {
   try {
     const { username, password } = req.body;
 
@@ -29,7 +30,7 @@ router.use(adminAuth);
 
 router.get("/orders", (req, res, next) => {
   try {
-    const { status, search, company, date, date_from, limit = 50, offset = 0 } = req.query;
+    const { status, search, company, date, date_from } = req.query;
     let where = "WHERE 1=1";
     const params = [];
 
@@ -54,16 +55,20 @@ router.get("/orders", (req, res, next) => {
       params.push(`%${search}%`, `%${search}%`, `%${search}%`);
     }
 
-    const sortBy = req.query.sort === "created_at" ? "created_at" : "delivery_date";
+    const allowedSortColumns = { delivery_date: "delivery_date", created_at: "created_at", updated_at: "updated_at" };
+    const sortBy = allowedSortColumns[req.query.sort] || "delivery_date";
     const sortOrder = String(req.query.order).toLowerCase() === "desc" ? "DESC" : "ASC";
+
+    const limitNum = Math.min(Math.max(parseInt(req.query.limit, 10) || 50, 1), 200);
+    const offsetNum = Math.max(parseInt(req.query.offset, 10) || 0, 0);
 
     const countSql = `SELECT COUNT(*) as total FROM orders ${where}`;
     const { total } = db.prepare(countSql).get(...params);
 
     const ordersSql = `SELECT * FROM orders ${where} ORDER BY ${sortBy} ${sortOrder} LIMIT ? OFFSET ?`;
-    const orders = db.prepare(ordersSql).all(...params, Number(limit), Number(offset));
+    const orders = db.prepare(ordersSql).all(...params, limitNum, offsetNum);
 
-    res.json({ orders, total });
+    res.json({ orders, total, limit: limitNum, offset: offsetNum });
   } catch (err) {
     next(err);
   }

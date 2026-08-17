@@ -1,6 +1,7 @@
 "use strict";
 
 const jwt = require("jsonwebtoken");
+const db = require("../db");
 const config = require("../config");
 
 function clientAuth(req, res, next) {
@@ -11,6 +12,10 @@ function clientAuth(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, config.jwtSecret);
+    const client = db.prepare("SELECT is_active FROM clients WHERE id = ?").get(decoded.clientId);
+    if (!client || !client.is_active) {
+      return res.status(401).json({ error: "Client deactivated" });
+    }
     req.clientId = decoded.clientId;
     next();
   } catch (err) {

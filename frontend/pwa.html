@@ -4,12 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#2563EB">
-  <meta name="description" content="Cook and Fry — заказ обедов с доставкой">
+  <meta name="description" content="На обед в буфет — заказ обедов с доставкой в офис и на производство">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://naobedvbufet.ru/pwa.html">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="manifest" href="/manifest.json">
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-  <title>Cook and Fry — Заказ обеда</title>
+  <title>На обед в буфет — Заказ обеда</title>
   <style>
     :root {
       --bg-base: #f0f4ff;
@@ -126,7 +128,7 @@
   <div id="offlineBanner" class="offline-banner">Нет подключения. Заказ можно оформить, когда появится интернет.</div>
 
   <header>
-    <div class="brand">Cook and Fry</div>
+    <div class="brand">На обед в буфет</div>
     <div class="tagline">Доставка обедов</div>
   </header>
 
@@ -201,7 +203,7 @@
   </main>
 
   <footer>
-    © 2026 Cook and Fry
+    © 2026 На обед в буфет
   </footer>
 
   <script>
@@ -293,10 +295,10 @@
             populateCompanies(companies, false);
           })
           .catch(function () {
-            populateCompanies(['Cook and Fry'], true);
+            populateCompanies(['На обед в буфет'], true);
           });
       } else {
-        populateCompanies(['Cook and Fry'], true);
+        populateCompanies(['На обед в буфет'], true);
       }
 
       // Date min = today
@@ -349,7 +351,7 @@
             showSuccess(json.order.order_number);
             form.reset();
             dateInput.min = new Date().toISOString().split('T')[0];
-            populateCompanies(['Cook and Fry'], true);
+            populateCompanies(['На обед в буфет'], true);
           } else {
             showError(json.error || 'Проверьте введённые данные и попробуйте ещё раз.');
           }

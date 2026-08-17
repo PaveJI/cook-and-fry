@@ -1,5 +1,9 @@
 "use strict";
 
+if (process.env.NODE_ENV === "production" && !process.env.JWT_SECRET) {
+  throw new Error("JWT_SECRET must be set in production");
+}
+
 module.exports = {
   port: process.env.PORT || 3000,
   env: process.env.NODE_ENV || "development",
@@ -8,7 +12,7 @@ module.exports = {
   adminUsername: process.env.ADMIN_USERNAME,
   adminPasswordHash: process.env.ADMIN_PASSWORD_HASH,
   adminToken: process.env.ADMIN_TOKEN,
-  jwtSecret: process.env.JWT_SECRET || "dev-secret",
+  jwtSecret: process.env.JWT_SECRET,
   notifications: {
     telegram: {
       botToken: process.env.TELEGRAM_BOT_TOKEN,
