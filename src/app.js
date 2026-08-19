@@ -45,18 +45,22 @@ const allowedOrigins = [
   ...(process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(",").map((o) => o.trim()) : [])
 ].filter(Boolean);
 
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  if (allowedOrigins.includes(origin)) return true;
+  // Разрешаем любые временные Cloudflare Tunnel URL
+  if (/\.trycloudflare\.com$/i.test(origin)) return true;
+  return false;
+}
+
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    callback(null, false);
+    callback(null, isAllowedOrigin(origin));
   },
   credentials: true
 }));
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (origin && !allowedOrigins.includes(origin)) {
+  if (!isAllowedOrigin(req.headers.origin)) {
     return res.status(403).json({ error: "Origin not allowed" });
   }
   next();

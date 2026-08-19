@@ -4,6 +4,7 @@ const express = require("express");
 const db = require("../db");
 const { createLeadLimiter } = require("../middleware/rateLimiter");
 const { notify: hubNotify } = require("../utils/hub-client.cjs");
+const { notifyNewLead } = require("../notifications");
 
 const router = express.Router();
 
@@ -39,6 +40,7 @@ router.post("/", createLeadLimiter, (req, res, next) => {
     const lead = db.prepare("SELECT * FROM leads WHERE id = ?").get(result.lastInsertRowid);
 
     hubNotify("info", formatLead(lead)).catch(console.error);
+    notifyNewLead(lead).catch(console.error);
 
     res.status(201).json({ success: true, lead });
   } catch (err) {

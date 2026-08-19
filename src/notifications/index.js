@@ -19,4 +19,21 @@ async function notifyNewOrder(order) {
   return results;
 }
 
-module.exports = { notifyNewOrder };
+async function notifyNewLead(lead) {
+  const results = await Promise.all(
+    providers
+      .filter((provider) => typeof provider.notifyLead === "function")
+      .map((provider) => provider.notifyLead(lead))
+  );
+
+  const sent = results.filter((r) => r.sent);
+  const failed = results.filter((r) => !r.sent);
+
+  if (sent.length === 0 && failed.length > 0) {
+    console.log("No lead notifications were sent:", failed.map((r) => `${r.provider}: ${r.reason || r.error}`).join("; "));
+  }
+
+  return results;
+}
+
+module.exports = { notifyNewOrder, notifyNewLead };

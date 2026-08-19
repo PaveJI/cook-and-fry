@@ -20,23 +20,53 @@ function formatOrder(order) {
   ].join("\n");
 }
 
+function formatLead(lead) {
+  return [
+    `Новая заявка с лендинга`,
+    `Имя: ${lead.name}`,
+    `Телефон: ${lead.phone}`,
+    `Компания: ${lead.company || "—"}`,
+    `Источник: ${lead.source || "landing"}`
+  ].join("\n");
+}
+
 async function notify(order) {
   if (!config.notifications.vk.token || !config.notifications.vk.peerId) {
     return { provider: "vk", sent: false, reason: "not configured" };
   }
 
-  // TODO: реализовать запрос к VK API
-  // const url = `https://api.vk.com/method/messages.send`;
-  // const params = new URLSearchParams({
-  //   access_token: config.notifications.vk.token,
-  //   peer_id: config.notifications.vk.peerId,
-  //   message: formatOrder(order),
-  //   v: "5.199"
-  // });
-  // const res = await fetch(url, { method: "POST", body: params });
-
+  // TODO: реализовать запрос к VK API для заказов
   console.log("[VK notification stub]", formatOrder(order));
   return { provider: "vk", sent: false, reason: "not implemented" };
 }
 
-module.exports = { notify };
+async function notifyLead(lead) {
+  const { token, peerId } = config.notifications.vk;
+  if (!token || !peerId) {
+    return { provider: "vk", sent: false, reason: "not configured" };
+  }
+
+  try {
+    const params = new URLSearchParams({
+      access_token: token,
+      peer_id: peerId,
+      message: formatLead(lead),
+      random_id: String(Date.now()),
+      v: "5.199"
+    });
+    const res = await fetch("https://api.vk.com/method/messages.send", {
+      method: "POST",
+      body: params
+    });
+    const data = await res.json();
+    if (data.error) {
+      throw new Error(data.error.error_msg);
+    }
+    return { provider: "vk", sent: true };
+  } catch (err) {
+    console.error("VK lead notification failed:", err.message);
+    return { provider: "vk", sent: false, error: err.message };
+  }
+}
+
+module.exports = { notify, notifyLead };

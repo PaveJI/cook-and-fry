@@ -20,17 +20,35 @@ function formatOrder(order) {
   ].join("\n");
 }
 
+function formatLead(lead) {
+  return [
+    `Новая заявка с лендинга`,
+    `Имя: ${lead.name}`,
+    `Телефон: ${lead.phone}`,
+    `Компания: ${lead.company || "—"}`,
+    `Источник: ${lead.source || "landing"}`
+  ].join("\n");
+}
+
 async function notify(order) {
   if (!config.notifications.max.token || !config.notifications.max.chatId) {
     return { provider: "max", sent: false, reason: "not configured" };
   }
 
-  // TODO: реализовать запрос к API мессенджера Max
-  // const url = "https://api.max.ru/...";
-  // const res = await fetch(url, { ... });
-
+  // TODO: реализовать запрос к API мессенджера Max для заказов
   console.log("[Max notification stub]", formatOrder(order));
   return { provider: "max", sent: false, reason: "not implemented" };
 }
 
-module.exports = { notify };
+async function notifyLead(lead) {
+  const { token, chatId } = config.notifications.max;
+  if (!token || !chatId) {
+    return { provider: "max", sent: false, reason: "not configured" };
+  }
+
+  // TODO: заменить на реальный endpoint API мессенджера Max
+  console.log("[Max lead notification stub]", formatLead(lead));
+  return { provider: "max", sent: false, reason: "not implemented" };
+}
+
+module.exports = { notify, notifyLead };
