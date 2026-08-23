@@ -36,6 +36,8 @@ const allowedOrigins = [
   config.baseUrl,
   "https://naobedvbufet.ru",
   "http://naobedvbufet.ru",
+  "https://naobedvbufet.shop",
+  "http://naobedvbufet.shop",
   ...(isDev ? [
     "http://localhost:3000",
     "http://localhost:3001",
@@ -83,6 +85,9 @@ app.get("/admin", (req, res) => {
 });
 app.get("/pwa", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend", "pwa.html"));
+});
+app.get("/privacy", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend", "privacy.html"));
 });
 
 app.use("/api/health", healthRouter);

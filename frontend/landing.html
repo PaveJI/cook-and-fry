@@ -29,7 +29,6 @@
         "@type": "Organization",
         "name": "На обед в буфет",
         "url": "https://naobedvbufet.ru/",
-        "logo": "https://naobedvbufet.ru/icons/icon-192x192.png",
         "description": "Доставка комплексных обедов в офис, на производство и склад в Долгопрудном, СЗАО и Московской области в радиусе 30 км.",
         "areaServed": [
           { "@type": "City", "name": "Долгопрудный" },
@@ -39,7 +38,7 @@
         ],
         "contactPoint": {
           "@type": "ContactPoint",
-          "telephone": "+79518124910",
+          "telephone": "+79771145154",
           "contactType": "sales",
           "areaServed": "RU",
           "availableLanguage": "Russian"
@@ -60,7 +59,7 @@
         ],
         "description": "Доставка комплексных обедов в офис, на производство, склад и другие объекты в Долгопрудном, СЗАО и Московской области в радиусе 30 км. Персональный подход, свежие продукты, точное время доставки.",
         "url": "https://naobedvbufet.ru/",
-        "telephone": "+79518124910",
+        "telephone": "+79771145154",
         "priceRange": "₽₽",
         "offers": {
           "@type": "Offer",
@@ -117,7 +116,11 @@
     }
 
     *, *::before, *::after { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    html {
+      scroll-behavior: smooth;
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior: none;
+    }
     body {
       margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -126,12 +129,14 @@
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
       line-height: 1.6;
-      transition: background-color 0.4s ease, color 0.4s ease;
+      overscroll-behavior-y: none;
+      touch-action: pan-y;
     }
 
     h1, h2, h3, h4, h5, h6 { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; margin: 0; line-height: 1.15; font-weight: 700; }
     p { margin: 0; }
-    a { color: inherit; text-decoration: none; }
+    a { color: inherit; text-decoration: none; touch-action: manipulation; }
+    button { touch-action: manipulation; }
     img { max-width: 100%; height: auto; display: block; }
 
     .icon { width: 1em; height: 1em; display: inline-block; vertical-align: middle; flex-shrink: 0; }
@@ -288,11 +293,23 @@
 
     .form-input {
       width: 100%; padding: 0.85rem 1rem; border-radius: 0.85rem; border: 1.5px solid var(--input-border);
-      background: var(--input-bg); color: var(--text-primary); font-size: 1rem; transition: border-color 0.2s, box-shadow 0.2s;
+      background: var(--input-bg); color: var(--text-primary); font-size: 16px; transition: border-color 0.2s, box-shadow 0.2s;
       font-family: "Inter", sans-serif;
+      -webkit-appearance: none; appearance: none;
     }
     .form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
     .form-input::placeholder { color: var(--text-muted); opacity: 0.7; }
+
+    .agreement {
+      padding: 0.9rem 1rem;
+      border-radius: 0.85rem;
+      background: rgba(255,248,245,0.9);
+      border: 1.5px solid rgba(225,29,72,0.15);
+    }
+    [data-theme="dark"] .agreement { background: rgba(30,23,23,0.6); border-color: rgba(244,63,94,0.25); }
+    .agreement label { display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer; text-align: left; }
+    .agreement input { width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; accent-color: var(--primary); }
+    .agreement span { font-size: 0.85rem; line-height: 1.5; color: var(--text-secondary); }
 
     .footer { padding: 3rem 0 1.5rem; border-top: 1px solid var(--card-border); }
     .footer-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
@@ -326,6 +343,14 @@
     .max-w-xl { max-width: 640px; }
     .max-w-2xl { max-width: 720px; }
 
+    @media (pointer: coarse) {
+      .global-blobs, .section-blobs { display: none !important; }
+      .btn, .service-card, .stat-card, .client-logo, .theme-toggle { transition: none !important; }
+      .btn-primary:hover::after { transform: none !important; }
+      .btn:hover, .service-card:hover, .stat-card:hover, .client-logo:hover, .theme-toggle:hover { transform: none !important; box-shadow: none !important; }
+      .nav-link:hover::after { width: 0 !important; }
+      .faq-question svg { transition: none !important; }
+    }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
     }
@@ -708,18 +733,27 @@
             <input type="text" name="name" class="form-input" placeholder="Ваше имя" aria-label="Ваше имя" required>
             <input type="tel" name="phone" class="form-input" placeholder="Телефон" aria-label="Телефон" required>
             <input type="text" name="company" class="form-input" placeholder="Название компании и количество человек" aria-label="Название компании и количество человек">
+            <div class="agreement">
+              <label>
+                <input type="checkbox" name="agreement" required>
+                <span>Я согласен(а) на обработку персональных данных (имя, телефон, адрес компании) в целях оформления заявки и связи со мной. Ознакомлен(а) с <a href="/privacy" target="_blank">политикой конфиденциальности</a>.</span>
+              </label>
+            </div>
             <button type="submit" class="btn btn-primary btn-block">Получить расчёт</button>
             <p id="formStatus" class="text-sm" style="min-height:1.5em"></p>
           </form>
+          <div class="agreement" style="margin-top:1rem;">
+            <p class="text-sm" style="margin:0;line-height:1.5;color:var(--text-secondary);">Отправляя заявку, вы подтверждаете согласие на обработку персональных данных и соглашаетесь с <a href="/privacy" target="_blank">политикой конфиденциальности</a>. Мы не передаём ваши данные третьим лицам и используем их только для связи по заказу.</p>
+          </div>
           
           <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:1.5rem;margin-top:2rem">
-            <a href="tel:+79518124910" class="btn btn-secondary">
+            <a href="tel:+79771145154" class="btn btn-secondary">
               <svg class="icon"><use href="#i-phone"/></svg>
-              <span>8 (951) 812-49-10</span>
+              <span>8 (977) 114-51-54</span>
             </a>
-            <a href="mailto:palbl41@gmail.com" class="btn btn-secondary">
+            <a href="mailto:vip.burovcev@mail.ru" class="btn btn-secondary">
               <svg class="icon"><use href="#i-mail"/></svg>
-              <span>palbl41@gmail.com</span>
+              <span>vip.burovcev@mail.ru</span>
             </a>
           </div>
         </div>
@@ -746,7 +780,8 @@
           <div class="title mb-2" style="font-size:1rem;color:var(--text-primary)">Действия</div>
           <a href="/index.html" class="footer-link text-sm">Заказать обед</a>
           <a href="#contacts" class="footer-link text-sm">Получить расчёт</a>
-          <a href="tel:+79518124910" class="footer-link text-sm">8 (951) 812-49-10</a>
+          <a href="/privacy" class="footer-link text-sm">Политика конфиденциальности</a>
+          <a href="tel:+79771145154" class="footer-link text-sm">8 (977) 114-51-54</a>
         </div>
       </div>
       <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--card-border);text-align:center" class="text-sm text-muted">
@@ -824,36 +859,58 @@
       });
     });
 
-    // Lead form
+    // Lead form -> Telegram bot
     document.getElementById('leadForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const status = document.getElementById('formStatus');
       const form = this;
-      const data = {
-        name: form.elements.name.value.trim(),
-        phone: form.elements.phone.value.trim(),
-        company: form.elements.company.value.trim()
-      };
-
-      try {
-        const res = await fetch('/api/leads', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
-        });
-        if (res.ok) {
-          status.textContent = 'Спасибо! Мы получили заявку и свяжемся с вами в ближайшее время.';
-          status.style.color = 'var(--success)';
-          form.reset();
-        } else {
-          const err = await res.json().catch(() => ({}));
-          status.textContent = err.error || 'Ошибка отправки. Попробуйте позже.';
-          status.style.color = 'var(--accent)';
-        }
-      } catch (err) {
-        status.textContent = 'Ошибка соединения. Попробуйте позже.';
+      if (!form.elements.agreement.checked) {
+        status.textContent = 'Подтвердите согласие на обработку персональных данных.';
         status.style.color = 'var(--accent)';
+        form.elements.agreement.focus();
+        return;
       }
+
+      const name = form.elements.name.value.trim();
+      const phone = form.elements.phone.value.trim();
+      const company = form.elements.company.value.trim();
+
+      if (name.length < 2) {
+        status.textContent = 'Укажите имя.';
+        status.style.color = 'var(--accent)';
+        form.elements.name.focus();
+        return;
+      }
+      if (!/[\d\s+\-()]{10,20}/.test(phone)) {
+        status.textContent = 'Укажите корректный телефон.';
+        status.style.color = 'var(--accent)';
+        form.elements.phone.focus();
+        return;
+      }
+
+      const text = 'Заявка с сайта naobedvbufet.ru\n' +
+        'Имя: ' + name + '\n' +
+        'Телефон: ' + phone +
+        (company ? '\nКомпания / количество: ' + company : '');
+      const tgUrl = 'https://t.me/NaobedvbufetBot?text=' + encodeURIComponent(text);
+
+      form.innerHTML =
+        '<div style="text-align:center;padding:1rem 0;display:flex;flex-direction:column;gap:1rem;">' +
+        '<p style="color:var(--success);margin:0;">Заявка собрана. Нажмите кнопку ниже, чтобы отправить её в Telegram.</p>' +
+        '<a href="' + tgUrl + '" target="_blank" class="btn btn-primary btn-block">Отправить заявку в Telegram</a>' +
+        '<a href="tel:+79771145154" class="btn btn-secondary btn-block">Позвонить 8 (977) 114-51-54</a>' +
+        '</div>';
+    });
+
+    // Smooth focus on Android to avoid viewport jumps
+    document.querySelectorAll('.form-input').forEach(input => {
+      input.addEventListener('focus', () => {
+        if (window.matchMedia('(pointer: coarse)').matches) {
+          setTimeout(() => {
+            input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 250);
+        }
+      });
     });
 
     // Year
